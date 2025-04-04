@@ -14,11 +14,11 @@ const HomeScreen = ({ navigation }) => {
                 const token = await AsyncStorage.getItem("auth_token");
                 if (!token) return;
 
-                const userResponse = await axios.get("http://192.168.244.41:8000/api/user/", {
+                const userResponse = await axios.get("http://192.168.161.16:8000/api/user/", {
                     headers: { Authorization: `Token ${token}` },
                 });
 
-                const resultsResponse = await axios.get("http://192.168.244.41:8000/api/test-results/", {
+                const resultsResponse = await axios.get("http://192.168.161.16:8000/api/test-results/", {
                     headers: { Authorization: `Token ${token}` },
                 });
 
@@ -48,6 +48,8 @@ const HomeScreen = ({ navigation }) => {
             <Text style={{ fontSize: 24 }}>Welcome, {user?.first_name}!</Text>
 
             <Button title="New Test" onPress={() => navigation.navigate("NewTest")} />
+            
+            <Button title="Submit Test Result" onPress={() => navigation.navigate("SubmitResult")} />
 
             <Text style={{ fontSize: 20, marginTop: 20 }}>Your Test Results:</Text>
             {testResults.length === 0 ? (
