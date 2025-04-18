@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://192.168.161.16:8000/api/'; // Replace with your actual backend URL
+const BASE_URL = 'http://192.168.43.137:8000/api/'; // Replace with your actual backend URL
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -10,10 +10,13 @@ const api = axios.create({
   },
 });
 
+
+
 // Utility function to retrieve the token from storage
 const getToken = async () => {
   try {
     const token = await AsyncStorage.getItem('auth_token');
+    console.log('Retrieved token from storage:', token);  // Add this line
     return token;
   } catch (error) {
     console.error('Error getting token from storage', error);
@@ -21,14 +24,23 @@ const getToken = async () => {
   }
 };
 
+
 // Setting up the Authorization header for authenticated requests
-api.interceptors.request.use(async (config) => {
-  const token = await getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+api.interceptors.request.use(
+  async (config) => {
+    const token = await getToken();
+    if (token) {
+      config.headers.Authorization = `Token ${token}`; // Updated to use 'Token' instead of 'Bearer'
+      console.log('Attached auth token to request:', token); // Debug log
+    } else {
+      console.log('No auth token found');
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+
 
 // POST request to login user
 export const loginUser = async (username, password) => {
@@ -59,15 +71,26 @@ export const getTestResults = async () => {
 };
 
 // Posting new test result to the backend
-export const postTestResult = async (testResultData) => {
+export const postTestResult = async (testResultData, isMultipart = false) => {
   try {
-    const response = await api.post('test-results/', testResultData);
+    // Ensure entry_method is hardcoded to 'manual'
+    const updatedTestResultData = {
+      ...testResultData,
+      entry_method: 'manual',
+    };
+
+    const headers = isMultipart
+      ? { 'Content-Type': 'multipart/form-data' }
+      : undefined;
+
+    const response = await api.post('test-results/', updatedTestResultData, { headers });
     return response.data;
   } catch (error) {
-    console.error('Error posting test result:', error);
+    console.error('Error posting test result:', error.response?.data || error.message);
     throw error;
   }
 };
+
 
 // Log out by removing the token from AsyncStorage
 export const logoutUser = async () => {

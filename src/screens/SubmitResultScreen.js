@@ -18,9 +18,10 @@ const SubmitResultScreen = () => {
 
     try {
       const payload = {
-        date: date.toISOString().split('T')[0], // Format as YYYY-MM-DD
-        protein_level: proteinLevel,
-        notes,
+        result: proteinLevel, // Map proteinLevel to result
+        entry_method: 'manual', // Add required entry_method field
+        image: null, // Optional field, set to null for manual entry
+        notes: notes,
       };
       const result = await postTestResult(payload);
       Alert.alert('Success', 'Test result submitted successfully');
