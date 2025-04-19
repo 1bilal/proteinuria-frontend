@@ -36,7 +36,6 @@ const NewTestScreen = ({ navigation }) => {
       type: "image/jpeg",
     });
     formData.append("entry_method", "auto");
-    formData.append("result", "Pending");
 
     try {
       setUploading(true);

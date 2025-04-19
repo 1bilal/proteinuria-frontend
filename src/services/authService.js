@@ -73,23 +73,26 @@ export const getTestResults = async () => {
 // Posting new test result to the backend
 export const postTestResult = async (testResultData, isMultipart = false) => {
   try {
-    // Ensure entry_method is hardcoded to 'manual'
-    const updatedTestResultData = {
-      ...testResultData,
-      entry_method: 'manual',
-    };
-
     const headers = isMultipart
       ? { 'Content-Type': 'multipart/form-data' }
       : undefined;
 
-    const response = await api.post('test-results/', updatedTestResultData, { headers });
+    // For JSON (manual entry), add entry_method manually
+    const dataToSend = isMultipart
+      ? testResultData // already includes entry_method = 'auto' and image
+      : {
+          ...testResultData,
+          entry_method: 'manual',
+        };
+
+    const response = await api.post('test-results/', dataToSend, { headers });
     return response.data;
   } catch (error) {
     console.error('Error posting test result:', error.response?.data || error.message);
     throw error;
   }
 };
+
 
 
 // Log out by removing the token from AsyncStorage
