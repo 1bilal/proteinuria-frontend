@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://192.168.43.137:8000/api/'; // Replace with your actual backend URL
+const BASE_URL = 'http://192.168.33.199:8000/api/'; // Added http:// to the URL
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -10,13 +10,11 @@ const api = axios.create({
   },
 });
 
-
-
 // Utility function to retrieve the token from storage
 const getToken = async () => {
   try {
     const token = await AsyncStorage.getItem('auth_token');
-    console.log('Retrieved token from storage:', token);  // Add this line
+    console.log('Retrieved token from storage:', token);  // Debugging
     return token;
   } catch (error) {
     console.error('Error getting token from storage', error);
@@ -24,23 +22,23 @@ const getToken = async () => {
   }
 };
 
-
 // Setting up the Authorization header for authenticated requests
 api.interceptors.request.use(
   async (config) => {
     const token = await getToken();
     if (token) {
-      config.headers.Authorization = `Token ${token}`; // Updated to use 'Token' instead of 'Bearer'
-      console.log('Attached auth token to request:', token); // Debug log
+      config.headers.Authorization = `Token ${token}`; // Ensuring Authorization header is added
+      console.log('Attached auth token to request:', token); // Debugging
     } else {
       console.log('No auth token found');
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
 );
-
-
 
 // POST request to login user
 export const loginUser = async (username, password) => {
@@ -49,12 +47,15 @@ export const loginUser = async (username, password) => {
       username,
       password,
     });
-    // Save the token to AsyncStorage
+
     const { token } = response.data;
+
+    // Save access token to AsyncStorage
     await AsyncStorage.setItem('auth_token', token);
+
     return token;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -82,7 +83,7 @@ export const postTestResult = async (testResultData, isMultipart = false) => {
       ? testResultData // already includes entry_method = 'auto' and image
       : {
           ...testResultData,
-          entry_method: 'manual',
+          entry_method: 'manual',  // Ensure 'manual' is added for non-auto methods
         };
 
     const response = await api.post('test-results/', dataToSend, { headers });
@@ -92,8 +93,6 @@ export const postTestResult = async (testResultData, isMultipart = false) => {
     throw error;
   }
 };
-
-
 
 // Log out by removing the token from AsyncStorage
 export const logoutUser = async () => {

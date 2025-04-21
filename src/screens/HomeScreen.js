@@ -14,23 +14,26 @@ const HomeScreen = ({ navigation }) => {
             try {
                 const token = await AsyncStorage.getItem("auth_token");
                 if (!token) return;
-
-                const userResponse = await axios.get("http://192.168.43.137:8000/api/user/", {
-                    headers: { Authorization: `Token ${token}` },
+        
+                const authHeaders = { Authorization: `Token ${token}` };
+        
+                const userResponse = await axios.get("http://192.168.33.199:8000/api/user/", {
+                    headers: authHeaders,
                 });
-
-                const resultsResponse = await axios.get("http://192.168.43.137:8000/api/test-results/", {
-                    headers: { Authorization: `Token ${token}` },
+        
+                const resultsResponse = await axios.get("http://192.168.33.199:8000/api/test-results/", {
+                    headers: authHeaders,
                 });
-
+        
                 setUser(userResponse.data);
                 setTestResults(resultsResponse.data);
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching data:", error.response?.data || error.message);
             } finally {
                 setLoading(false);
             }
         };
+        
 
         fetchData();
     }, []);
